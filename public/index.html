@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Margen · Revisor académico</title><link rel="stylesheet" href="/styles.css"><script src="/app.js" defer></script></head>
+<body>
+<a class="skip" href="#main">Ir al contenido</a>
+<aside class="sidebar">
+ <a class="brand" href="/" aria-label="Margen, inicio"><span class="brand-symbol" aria-hidden="true">m.</span><span>margen<span class="brand-caption">REVISOR ACADÉMICO</span></span></a>
+ <div class="sidebar-label">ESPACIO DE TRABAJO</div>
+ <nav aria-label="Secciones" role="tablist" aria-orientation="vertical">
+  <button class="nav-item active" role="tab" id="tab-document" aria-controls="panel-document" aria-selected="true" data-tab="document"><span class="nav-number">01</span>Documento</button>
+  <button class="nav-item" role="tab" id="tab-review" aria-controls="panel-review" aria-selected="false" tabindex="-1" data-tab="review"><span class="nav-number">02</span>Observaciones<span id="findingBadge" class="badge" hidden></span></button>
+  <button class="nav-item" role="tab" id="tab-citations" aria-controls="panel-citations" aria-selected="false" tabindex="-1" data-tab="citations"><span class="nav-number">03</span>Citas y fuentes</button>
+  <button class="nav-item" role="tab" id="tab-matches" aria-controls="panel-matches" aria-selected="false" tabindex="-1" data-tab="matches"><span class="nav-number">04</span>Coincidencias</button>
+  <button class="nav-item" role="tab" id="tab-academic" aria-controls="panel-academic" aria-selected="false" tabindex="-1" data-tab="academic"><span class="nav-number">05</span>Rúbrica e IA</button>
+  <button class="nav-item" role="tab" id="tab-reports" aria-controls="panel-reports" aria-selected="false" tabindex="-1" data-tab="reports"><span class="nav-number">06</span>Reportes externos</button>
+ </nav>
+ <div class="sidebar-note"><span class="local-dot" aria-hidden="true"></span><strong>Tu espacio local</strong><p>El texto permanece en esta sesión. Tú eliges si usas búsqueda web o revisión con IA.</p></div>
+ <div class="sidebar-footer">Leer. Contrastar. Mejorar.<span>Versión 1.0 · Español</span></div>
+</aside>
+<div class="workspace">
+ <header class="topbar"><span id="fileName">Documento sin cargar</span><div><span id="sessionState" class="session-state">Listo para empezar</span><button id="export" class="button secondary small" disabled>Exportar informe</button></div></header>
+ <main id="main">
+  <div class="page-heading"><div><span class="eyebrow">DEL BORRADOR A UNA MEJOR VERSIÓN</span><h1>Una lectura más cuidadosa.</h1><p>Revisa la forma, contrasta las fuentes y fortalece tus argumentos.</p></div><span class="edition">M<span>01 / REVISIÓN</span></span></div>
+  <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true">Carga un archivo o pega tu texto para comenzar.</div>
+  <div id="error" class="error" role="alert" hidden></div>
+  <section role="tabpanel" id="panel-document" aria-labelledby="tab-document">
+   <div class="document-grid">
+    <article class="card editor-card">
+     <div class="card-head"><div><span class="eyebrow">TU DOCUMENTO</span><h2>El punto de partida</h2></div><label class="button secondary file-button" for="documentFile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M5 15v5h14v-5"/></svg>Cargar archivo<input id="documentFile" type="file" accept=".docx,.pdf,.txt,.md"></label></div>
+     <label class="sr-only" for="editor">Texto del trabajo</label>
+     <textarea id="editor" placeholder="Pega aquí el texto completo de tu trabajo…" spellcheck="true" aria-describedby="editorHint"></textarea>
+     <div class="editor-footer"><span id="draftWords">0 palabras en el editor</span><span id="editorHint">DOCX, PDF con texto, TXT o MD · hasta 12 MB</span></div>
+     <div class="editor-actions"><button id="analyze" class="button primary">Revisar documento<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button><button id="example" class="text-button">Probar con un ejemplo</button></div>
+    </article>
+    <aside class="document-aside">
+     <article class="card settings-card"><span class="eyebrow">CRITERIOS DE REVISIÓN</span><h2>La extensión, en contexto</h2><p>Define cómo debe interpretarse la indicación del profesor.</p><label for="wordTarget">Número de palabras</label><input type="number" id="wordTarget" min="1" max="100000" value="5000"><label for="wordMode">Cómo se aplica</label><select id="wordMode"><option value="reference">Solo como referencia</option><option value="min">Mínimo exigido</option><option value="max">Máximo permitido</option></select><p class="hint">Se cuentan título y cuerpo. Se excluye el contenido desde Referencias o Anexos, si se reconoce el encabezado.</p></article>
+     <article class="principle"><span class="eyebrow">UNA DISTINCIÓN IMPORTANTE</span><h2>Similitud e IA son medidas diferentes.</h2><p>Una coincidencia puede ser una cita legítima. Un detector tampoco establece por sí solo quién escribió un texto.</p><span class="rule-mark" aria-hidden="true">↳</span></article>
+    </aside>
+   </div>
+   <div id="overview" hidden></div>
+  </section>
+  <section role="tabpanel" id="panel-review" aria-labelledby="tab-review" hidden><div class="section-title"><span class="eyebrow">REVISIÓN LOCAL</span><h2>Detalles que merecen otra lectura</h2><p>Observaciones basadas en reglas, con el fragmento que las originó.</p></div><div id="findings" class="result-list"></div></section>
+  <section role="tabpanel" id="panel-citations" aria-labelledby="tab-citations" hidden><div class="section-title"><span class="eyebrow">TRAZABILIDAD</span><h2>De la cita a la fuente</h2><p>Contraste orientativo de formas autor-año. La existencia y el contenido de las fuentes requieren comprobación.</p></div><div id="citations"></div></section>
+  <section role="tabpanel" id="panel-matches" aria-labelledby="tab-matches" hidden><div class="section-title"><span class="eyebrow">COMPARAR PARA COMPRENDER</span><h2>Coincidencias con contexto</h2><p>Compara el cuerpo del trabajo con fuentes que tú aportes o con páginas públicas.</p></div>
+   <div class="two-columns"><article class="card"><h3>Fuentes de comparación</h3><p>Hasta ocho documentos. Los fragmentos coincidentes se muestran con su fuente.</p><label class="button secondary file-button" for="sourceFiles">Añadir fuentes<input id="sourceFiles" type="file" accept=".docx,.pdf,.txt,.md" multiple></label><ul id="sourceList" class="source-list"></ul><label class="checkbox"><input type="checkbox" id="excludeQuotes">Excluir citas entre comillas y paréntesis autor-año</label><p class="hint">La exclusión reconoce formas habituales; revisa las citas de bloque manualmente.</p><button id="compare" class="button primary">Comparar fuentes locales</button></article>
+   <article class="card"><h3>Búsqueda en la web</h3><p>Busca una muestra de fragmentos en páginas públicas. La cobertura depende del acceso y de las respuestas de los buscadores.</p><label class="checkbox"><input type="checkbox" id="webConsent">Permito enviar fragmentos del texto a Bing, DuckDuckGo y Wikipedia.</label><div class="button-row"><button id="webSearch" class="button secondary">Buscar coincidencias</button><button id="cancelWeb" class="text-button" hidden>Cancelar</button></div><progress id="webProgress" max="100" value="0" hidden aria-label="Progreso de la búsqueda"></progress><p class="hint">No incluye la base privada de Turnitin. Una búsqueda sin resultados o incompleta no prueba originalidad.</p></article></div>
+   <div id="localMatches"></div><div id="webMatches"></div>
+  </section>
+  <section role="tabpanel" id="panel-academic" aria-labelledby="tab-academic" hidden><div class="section-title"><span class="eyebrow">LECTURA ACADÉMICA</span><h2>Los argumentos, bajo la lupa</h2><p>Configura la rúbrica y solicita una evaluación formativa con evidencias del documento.</p></div>
+   <article class="card"><div class="card-head"><div><h3>Rúbrica editable</h3><p>Plantilla orientativa de 20 puntos. Ajústala a la rúbrica real del curso.</p></div><span class="pill" id="rubricTotal">20 puntos</span></div><div id="rubricEditor" class="rubric-editor"></div><p class="hint">No se aplican sanciones automáticas: falta confirmar la fórmula del profesor para IA y similitud.</p></article>
+   <article class="card ai-card"><h3>Revisión con IA</h3><p id="aiConfig">Comprobando configuración…</p><label class="checkbox"><input type="checkbox" id="aiConsent">Permito enviar el texto completo y esta rúbrica a OpenAI para esta revisión. La API puede generar un cobro en la cuenta configurada.</label><button id="aiReview" class="button primary" disabled>Evaluar con IA</button><details><summary>Cómo activar esta opción</summary><p>Crea un archivo <code>.env</code> en la carpeta de la app con <code>OPENAI_API_KEY</code> y, opcionalmente, <code>OPENAI_MODEL</code>. Reinicia el servidor. La clave se utiliza en el servidor y no se muestra en el navegador. El README incluye los pasos.</p></details></article>
+   <div id="aiResult"></div>
+  </section>
+  <section role="tabpanel" id="panel-reports" aria-labelledby="tab-reports" hidden><div class="section-title"><span class="eyebrow">RESULTADOS EXTERNOS</span><h2>Cada indicador, en su lugar</h2><p>Registra la métrica y el alcance de cada servicio. No se promedian porcentajes de significado distinto.</p></div>
+   <article class="card"><h3>Leer un reporte PDF</h3><p>Carga un reporte con texto para buscar sus indicadores. La lectura es preliminar y debe contrastarse con el PDF.</p><label class="button secondary file-button" for="reportFile">Cargar reporte<input id="reportFile" type="file" accept=".pdf,.txt"></label><div id="parsedReport"></div></article>
+   <article class="card"><h3>Registrar un resultado observado</h3><form id="externalForm" class="external-form"><div><label for="service">Servicio</label><select id="service"><option>GPTZero</option><option>ZeroGPT</option><option>Copyleaks</option><option>Turnitin</option><option>Otro</option></select></div><div><label for="metric">Métrica</label><select id="metric"><option>Indicador de IA</option><option>Similitud</option><option>Probabilidad de clasificación</option></select></div><div><label for="percentage">Porcentaje o etiqueta</label><input id="percentage" required maxlength="40" placeholder="Ej.: 32 % o *%"></div><div><label for="scope">Alcance del análisis</label><input id="scope" required maxlength="150" placeholder="Texto completo o fragmento"></div><button class="button secondary" type="submit">Añadir resultado</button></form></article><div id="externalResults"></div>
+  </section>
+  <footer class="main-footer"><span>Margen · Revisión con evidencias</span><span>La decisión académica requiere lectura y criterio humano.</span></footer>
+ </main>
+</div>
+</body></html>

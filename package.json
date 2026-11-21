@@ -1,0 +1,9 @@
+{
+  "name": "margen-revisor-academico",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Revisión académica local con evidencias y comparación de textos en español",
+  "scripts": {"start": "node server.mjs", "test": "node --test tests/*.test.mjs vendor/free-turnitin/shared/*.test.js vendor/free-turnitin/server/*.test.js"},
+  "engines": {"node": ">=22"}
+}
