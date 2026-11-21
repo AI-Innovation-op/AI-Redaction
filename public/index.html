@@ -1,9 +1,26 @@
 <!doctype html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Margen · Revisor académico</title><link rel="stylesheet" href="/styles.css"><script src="/app.js" defer></script></head>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Redaction · Revisor académico</title><link rel="stylesheet" href="/styles.css"><script src="/app.js" defer></script></head>
 <body>
+<section id="loginScreen" class="login-screen" hidden aria-labelledby="loginTitle">
+ <div class="login-card">
+  <span class="login-monogram" aria-hidden="true">AI</span>
+  <span class="eyebrow">TU ESPACIO DE ESCRITURA</span>
+  <h1 id="loginTitle">AI Redaction</h1>
+  <p>Revisa tu trabajo con calma.<br>Mejora tus ideas con evidencia.</p>
+  <form id="loginForm">
+   <label for="accessPassword">Clave de acceso</label>
+   <div class="password-field"><input id="accessPassword" type="password" name="password" autocomplete="current-password" required maxlength="200"><button type="button" id="showPassword" aria-pressed="false">Mostrar</button></div>
+   <p id="loginError" class="login-error" role="alert" hidden></p>
+   <button id="loginButton" class="button primary" type="submit">Entrar a mi espacio</button>
+  </form>
+  <p class="hint">Este espacio es privado. Tu trabajo se conserva solo durante esta sesión, salvo que descargues un informe.</p>
+  <span class="version-label">Versión 0.5</span>
+ </div>
+</section>
+<div id="appShell" hidden>
 <a class="skip" href="#main">Ir al contenido</a>
 <aside class="sidebar">
- <a class="brand" href="/" aria-label="Margen, inicio"><span class="brand-symbol" aria-hidden="true">m.</span><span>margen<span class="brand-caption">REVISOR ACADÉMICO</span></span></a>
+ <a class="brand" href="/" aria-label="AI Redaction, inicio"><span class="brand-symbol" aria-hidden="true">AI</span><span class="brand-name">AI Redaction<span class="brand-caption">REVISOR ACADÉMICO</span></span></a>
  <div class="sidebar-label">ESPACIO DE TRABAJO</div>
  <nav aria-label="Secciones" role="tablist" aria-orientation="vertical">
   <button class="nav-item active" role="tab" id="tab-document" aria-controls="panel-document" aria-selected="true" data-tab="document"><span class="nav-number">01</span>Documento</button>
@@ -13,13 +30,13 @@
   <button class="nav-item" role="tab" id="tab-academic" aria-controls="panel-academic" aria-selected="false" tabindex="-1" data-tab="academic"><span class="nav-number">05</span>Rúbrica e IA</button>
   <button class="nav-item" role="tab" id="tab-reports" aria-controls="panel-reports" aria-selected="false" tabindex="-1" data-tab="reports"><span class="nav-number">06</span>Reportes externos</button>
  </nav>
- <div class="sidebar-note"><span class="local-dot" aria-hidden="true"></span><strong>Tu espacio local</strong><p>El texto permanece en esta sesión. Tú eliges si usas búsqueda web o revisión con IA.</p></div>
- <div class="sidebar-footer">Leer. Contrastar. Mejorar.<span>Versión 1.0 · Español</span></div>
+ <div class="sidebar-note"><span class="local-dot" aria-hidden="true"></span><strong>Tu espacio privado</strong><p>El texto permanece en esta sesión. Tú eliges si usas búsqueda web o revisión con IA.</p></div>
+ <div class="sidebar-footer">Leer. Contrastar. Mejorar.<span>Versión 0.5 · Español</span></div>
 </aside>
 <div class="workspace">
- <header class="topbar"><span id="fileName">Documento sin cargar</span><div><span id="sessionState" class="session-state">Listo para empezar</span><button id="export" class="button secondary small" disabled>Exportar informe</button></div></header>
+ <header class="topbar"><span id="fileName">Documento sin cargar</span><div><span id="sessionState" class="session-state">Listo para empezar</span><button id="logout" class="text-button" hidden>Salir</button><button id="export" class="button secondary small" disabled>Exportar informe</button></div></header>
  <main id="main">
-  <div class="page-heading"><div><span class="eyebrow">DEL BORRADOR A UNA MEJOR VERSIÓN</span><h1>Una lectura más cuidadosa.</h1><p>Revisa la forma, contrasta las fuentes y fortalece tus argumentos.</p></div><span class="edition">M<span>01 / REVISIÓN</span></span></div>
+  <div class="page-heading"><div><span class="eyebrow">DEL BORRADOR A UNA MEJOR VERSIÓN</span><h1>Una lectura más cuidadosa.</h1><p>Revisa la forma, contrasta las fuentes y fortalece tus argumentos.</p></div><span class="edition">AI<span>0.5 / REVISIÓN</span></span></div>
   <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true">Carga un archivo o pega tu texto para comenzar.</div>
   <div id="error" class="error" role="alert" hidden></div>
   <section role="tabpanel" id="panel-document" aria-labelledby="tab-document">
@@ -29,7 +46,7 @@
      <label class="sr-only" for="editor">Texto del trabajo</label>
      <textarea id="editor" placeholder="Pega aquí el texto completo de tu trabajo…" spellcheck="true" aria-describedby="editorHint"></textarea>
      <div class="editor-footer"><span id="draftWords">0 palabras en el editor</span><span id="editorHint">DOCX, PDF con texto, TXT o MD · hasta 12 MB</span></div>
-     <div class="editor-actions"><button id="analyze" class="button primary">Revisar documento<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button><button id="example" class="text-button">Probar con un ejemplo</button></div>
+     <div class="editor-actions"><button id="analyze" class="button primary">Revisar mi trabajo<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button><button id="example" class="text-button">Probar con un ejemplo</button></div>
     </article>
     <aside class="document-aside">
      <article class="card settings-card"><span class="eyebrow">CRITERIOS DE REVISIÓN</span><h2>La extensión, en contexto</h2><p>Define cómo debe interpretarse la indicación del profesor.</p><label for="wordTarget">Número de palabras</label><input type="number" id="wordTarget" min="1" max="100000" value="5000"><label for="wordMode">Cómo se aplica</label><select id="wordMode"><option value="reference">Solo como referencia</option><option value="min">Mínimo exigido</option><option value="max">Máximo permitido</option></select><p class="hint">Se cuentan título y cuerpo. Se excluye el contenido desde Referencias o Anexos, si se reconoce el encabezado.</p></article>
@@ -47,14 +64,15 @@
   </section>
   <section role="tabpanel" id="panel-academic" aria-labelledby="tab-academic" hidden><div class="section-title"><span class="eyebrow">LECTURA ACADÉMICA</span><h2>Los argumentos, bajo la lupa</h2><p>Configura la rúbrica y solicita una evaluación formativa con evidencias del documento.</p></div>
    <article class="card"><div class="card-head"><div><h3>Rúbrica editable</h3><p>Plantilla orientativa de 20 puntos. Ajústala a la rúbrica real del curso.</p></div><span class="pill" id="rubricTotal">20 puntos</span></div><div id="rubricEditor" class="rubric-editor"></div><p class="hint">No se aplican sanciones automáticas: falta confirmar la fórmula del profesor para IA y similitud.</p></article>
-   <article class="card ai-card"><h3>Revisión con IA</h3><p id="aiConfig">Comprobando configuración…</p><label class="checkbox"><input type="checkbox" id="aiConsent">Permito enviar el texto completo y esta rúbrica a OpenAI para esta revisión. La API puede generar un cobro en la cuenta configurada.</label><button id="aiReview" class="button primary" disabled>Evaluar con IA</button><details><summary>Cómo activar esta opción</summary><p>Crea un archivo <code>.env</code> en la carpeta de la app con <code>OPENAI_API_KEY</code> y, opcionalmente, <code>OPENAI_MODEL</code>. Reinicia el servidor. La clave se utiliza en el servidor y no se muestra en el navegador. El README incluye los pasos.</p></details></article>
+   <article class="card ai-card"><h3>Revisión con IA</h3><p id="aiConfig">Comprobando configuración…</p><label class="checkbox"><input type="checkbox" id="aiConsent">Permito enviar el texto y la rúbrica al proveedor de IA configurado para esta revisión. Se usará el saldo de la cuenta administradora.</label><button id="aiReview" class="button primary" disabled>Evaluar con IA</button><details><summary>Qué revisa la IA</summary><p>Lee la tesis, los argumentos y la aplicación de conceptos con la rúbrica elegida. Sus observaciones son orientativas: revisa las citas que presenta antes de aceptar una sugerencia.</p></details></article>
    <div id="aiResult"></div>
   </section>
   <section role="tabpanel" id="panel-reports" aria-labelledby="tab-reports" hidden><div class="section-title"><span class="eyebrow">RESULTADOS EXTERNOS</span><h2>Cada indicador, en su lugar</h2><p>Registra la métrica y el alcance de cada servicio. No se promedian porcentajes de significado distinto.</p></div>
    <article class="card"><h3>Leer un reporte PDF</h3><p>Carga un reporte con texto para buscar sus indicadores. La lectura es preliminar y debe contrastarse con el PDF.</p><label class="button secondary file-button" for="reportFile">Cargar reporte<input id="reportFile" type="file" accept=".pdf,.txt"></label><div id="parsedReport"></div></article>
    <article class="card"><h3>Registrar un resultado observado</h3><form id="externalForm" class="external-form"><div><label for="service">Servicio</label><select id="service"><option>GPTZero</option><option>ZeroGPT</option><option>Copyleaks</option><option>Turnitin</option><option>Otro</option></select></div><div><label for="metric">Métrica</label><select id="metric"><option>Indicador de IA</option><option>Similitud</option><option>Probabilidad de clasificación</option></select></div><div><label for="percentage">Porcentaje o etiqueta</label><input id="percentage" required maxlength="40" placeholder="Ej.: 32 % o *%"></div><div><label for="scope">Alcance del análisis</label><input id="scope" required maxlength="150" placeholder="Texto completo o fragmento"></div><button class="button secondary" type="submit">Añadir resultado</button></form></article><div id="externalResults"></div>
   </section>
-  <footer class="main-footer"><span>Margen · Revisión con evidencias</span><span>La decisión académica requiere lectura y criterio humano.</span></footer>
+  <footer class="main-footer"><span>AI Redaction · Revisión con evidencias</span><span>La decisión académica requiere lectura y criterio humano.</span></footer>
  </main>
+</div>
 </div>
 </body></html>

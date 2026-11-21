@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ai-redaction
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: AI_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_MODEL
+        value: google/gemini-3.5-flash-lite
+      - key: APP_PASSWORD_HASH
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false

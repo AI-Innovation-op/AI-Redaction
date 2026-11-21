@@ -1,4 +1,4 @@
-# Dirección visual de Margen
+# Dirección visual de AI Redaction
 
 Interfaz editorial para revisar documentos en español. Navegación lateral numerada, editor como área principal, observaciones con evidencia, indicadores acompañados de sus límites y acciones secundarias visibles.
 

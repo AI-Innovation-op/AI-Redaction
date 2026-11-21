@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    ports:
+      - 127.0.0.1:4317:10000
+    env_file: .env
+    environment:
+      APP_ORIGIN: http://127.0.0.1:4317
+    restart: unless-stopped

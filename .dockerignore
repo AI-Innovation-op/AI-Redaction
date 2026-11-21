@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+.runtime.json
+.private
+node_modules
+tests
+scripts
+dist
+*.log
+*.zip
+*.docx
+*.pdf
+__pycache__
+*.pyc

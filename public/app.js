@@ -22,8 +22,8 @@ function settings(){
 }
 async function api(route,data,options={}){
  if(!state.config)throw new Error('La app aún no se ha conectado al servidor. Actualiza la página.');
- const res=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json','X-Margen-Token':state.config.token},body:JSON.stringify(data),...options});
- const result=await res.json();if(!res.ok)throw new Error(result.error??'La revisión no se completó.');return result;
+ const res=await fetch('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json','X-AI-Redaction-Token':state.config.token},body:JSON.stringify(data),...options});
+ const result=await res.json();if(res.status===401)showLogin();if(!res.ok)throw new Error(result.error??'La revisión no se completó.');return result;
 }
 async function run(fn,message){
  if(state.busy)return;state.busy=true;error(null);status(message);setBusy(true);
@@ -95,7 +95,7 @@ $('#webSearch').addEventListener('click',()=>run(async()=>{
  if(!state.review)await analyze();
  state.web=null;$('#webMatches').innerHTML='';const controller=new AbortController();state.webController=controller;$('#cancelWeb').hidden=false;$('#webProgress').hidden=false;$('#webProgress').value=0;
  try{
-  const res=await fetch('/api/web',{method:'POST',headers:{'Content-Type':'application/json','X-Margen-Token':state.config.token},body:JSON.stringify({text:$('#editor').value,settings:settings(),consent:true}),signal:controller.signal});
+  const res=await fetch('/api/web',{method:'POST',headers:{'Content-Type':'application/json','X-AI-Redaction-Token':state.config.token},body:JSON.stringify({text:$('#editor').value,settings:settings(),consent:true}),signal:controller.signal});
   if(!res.ok)throw new Error((await res.json()).error);const reader=res.body.getReader(),decoder=new TextDecoder();let buffer='',gotResult=false;
   while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value??new Uint8Array(),{stream:!done});let index;while((index=buffer.indexOf('\n'))>=0){const item=JSON.parse(buffer.slice(0,index));buffer=buffer.slice(index+1);if(item.type==='progress'){$('#webProgress').value=item.percent;status(`Buscando coincidencias públicas… ${item.percent} % del proceso.`);}if(item.type==='error')throw new Error(item.error);if(item.type==='result'){state.web=item.result;gotResult=true;}}if(done)break;}
   if(!gotResult)throw new Error('La búsqueda se interrumpió. No hay un resultado completo.');renderWeb();status('Búsqueda terminada. Comprueba la cobertura y las páginas que pudieron abrirse.');
@@ -113,7 +113,7 @@ function renderRubric(rubric){
 }
 $('#rubricEditor').addEventListener('input',()=>{state.ai=null;$('#aiResult').innerHTML='';$('#rubricTotal').textContent=`${settings().rubric.reduce((n,r)=>n+r.max,0)} puntos`;invalidate();});
 $('#aiReview').addEventListener('click',()=>run(async()=>{
- if(!$('#aiConsent').checked)throw new Error('Activa el permiso de envío del texto a OpenAI para solicitar esta revisión.');
+ if(!$('#aiConsent').checked)throw new Error('Activa el permiso de revisión con IA para continuar.');
  if(!state.review)await analyze();state.ai=null;renderAI();
  state.ai=await api('ai',{text:$('#editor').value,settings:settings(),consent:true});renderAI();status('Revisión con IA terminada. Contrasta cada observación con sus evidencias y con la rúbrica real.');
 },'Leyendo el documento con la rúbrica… Puede tardar unos minutos.'));
@@ -143,12 +143,27 @@ $('#export').addEventListener('click',()=>{
  const local=r.local?`<p>${r.local.stats.overallPercent} % · ${r.local.stats.matchedWords} de ${r.local.stats.countedWords} palabras comparadas; ${r.local.compared} fuentes aportadas.</p><p>${esc(r.local.scope)}</p>${r.local.sources.map(s=>`<p>${esc(s.title)}: ${s.sharePercent} %</p>`).join('')}<div style="white-space:pre-wrap">${highlighted(r.body,r.local.spans)}</div>`:'<p>No ejecutada.</p>';
  const a=state.ai;const ai=a?`<p>${esc(a.summary)}</p><p>Puntaje orientativo: ${a.total===null?'No calculable':a.total+' / '+a.max}. Sin penalidades.</p>${a.criteria.map(c=>`<h3>${esc(c.name)}: ${c.score===null?'No evaluable':c.score+' / '+c.max}</h3><p>${esc(c.reason)}</p><blockquote>${esc(c.quote)}</blockquote><p>${esc(c.suggestion)}</p>`).join('')}<ul>${a.limitations.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:'<p>No ejecutada. La revisión local no puntúa la calidad argumentativa.</p>';
  const web=state.web?`<p>${state.web.coverage.pagesFetched>0&&state.web.coverage.queriesRun>state.web.coverage.queriesFailed?state.web.similarity.overallPercent+' % observado.':'Sin cobertura suficiente para un porcentaje.'} Consultados ${state.web.coverage.segmentsSearched}/${state.web.coverage.segmentsTotal} segmentos; ${state.web.coverage.pagesFetched} páginas leídas; ${state.web.coverage.queriesFailed} consultas fallidas. ${state.web.coverage.pagesFailed} páginas no pudieron leerse. Un fallo no equivale a ausencia de coincidencias.</p>${state.web.sources.map(s=>`<p><a href="${esc(safeLink(s.url))}">${esc(s.title||s.host)}</a>: ${s.sharePercent} %</p>`).join('')}`:'<p>No ejecutada.</p>';
- const html=`<!doctype html><html lang="es"><meta charset="utf-8"><title>Informe de revisión · Margen</title><style>body{font:16px/1.6 Georgia,serif;max-width:900px;margin:50px auto;padding:0 25px;color:#202d3e}h1,h2,h3{font-family:Arial,sans-serif}h1{color:#1e3a5f}h2{border-bottom:1px solid #bbb;padding-bottom:9px;margin-top:40px}blockquote{background:#f6f7f9;border-left:3px solid #b28a45;padding:15px;margin:20px 0;white-space:pre-wrap;overflow-wrap:anywhere}mark{background:#f2dfb5}a{color:#1e3a5f}p,li{overflow-wrap:anywhere}@media print{body{margin:0;max-width:none}h2,h3{break-after:avoid}blockquote{break-inside:avoid}}</style><h1>Margen · Informe de revisión</h1><p>${esc(state.file)}<br>${esc(new Date(r.checkedAt).toLocaleString('es-PE'))}</p><p>Revisión formativa. No certifica autoría, originalidad ni calificación oficial.</p>${heading('Extensión')}<p>${fmt(r.counts.body)} palabras en el cuerpo, ${fmt(r.counts.total)} en todo el texto. Configuración: ${esc(r.settings.wordMode)} · ${fmt(r.settings.wordTarget)} palabras.</p>${heading('Observaciones locales')}${findings||'<p>Sin observaciones detectadas por estas reglas.</p>'}${heading('Citas y referencias')}<p>${esc(r.citations.scope)}</p>${r.citations.citations.map(c=>`<p>${esc(c.author)} (${esc(c.year)}): ${c.found?'referencia compatible localizada':'referencia por localizar'}.</p>`).join('')}${heading('Coincidencias locales')}${local}${heading('Coincidencias web')}${web}${heading('Revisión académica con IA')}${ai}${heading('Resultados externos registrados')}${state.external.map(e=>`<p>${esc(e.service)} · ${esc(e.metric)}: ${esc(e.value)}. Alcance: ${esc(e.scope)}.</p>`).join('')||'<p>No registrados.</p>'}${heading('Límites')}<ul>${r.limits.map(l=>`<li>${esc(l)}</li>`).join('')}</ul></html>`;
- download(html,'Margen-informe.html','text/html;charset=utf-8');status('Informe exportado como HTML. Puedes abrirlo e imprimirlo como PDF.');
+ const html=`<!doctype html><html lang="es"><meta charset="utf-8"><title>Informe de revisión · AI Redaction</title><style>body{font:16px/1.6 Georgia,serif;max-width:900px;margin:50px auto;padding:0 25px;color:#202d3e}h1,h2,h3{font-family:Arial,sans-serif}h1{color:#1e3a5f}h2{border-bottom:1px solid #bbb;padding-bottom:9px;margin-top:40px}blockquote{background:#f6f7f9;border-left:3px solid #b28a45;padding:15px;margin:20px 0;white-space:pre-wrap;overflow-wrap:anywhere}mark{background:#f2dfb5}a{color:#1e3a5f}p,li{overflow-wrap:anywhere}@media print{body{margin:0;max-width:none}h2,h3{break-after:avoid}blockquote{break-inside:avoid}}</style><h1>AI Redaction · Informe de revisión</h1><p>${esc(state.file)}<br>${esc(new Date(r.checkedAt).toLocaleString('es-PE'))}</p><p>Revisión formativa. No certifica autoría, originalidad ni calificación oficial.</p>${heading('Extensión')}<p>${fmt(r.counts.body)} palabras en el cuerpo, ${fmt(r.counts.total)} en todo el texto. Configuración: ${esc(r.settings.wordMode)} · ${fmt(r.settings.wordTarget)} palabras.</p>${heading('Observaciones locales')}${findings||'<p>Sin observaciones detectadas por estas reglas.</p>'}${heading('Citas y referencias')}<p>${esc(r.citations.scope)}</p>${r.citations.citations.map(c=>`<p>${esc(c.author)} (${esc(c.year)}): ${c.found?'referencia compatible localizada':'referencia por localizar'}.</p>`).join('')}${heading('Coincidencias locales')}${local}${heading('Coincidencias web')}${web}${heading('Revisión académica con IA')}${ai}${heading('Resultados externos registrados')}${state.external.map(e=>`<p>${esc(e.service)} · ${esc(e.metric)}: ${esc(e.value)}. Alcance: ${esc(e.scope)}.</p>`).join('')||'<p>No registrados.</p>'}${heading('Límites')}<ul>${r.limits.map(l=>`<li>${esc(l)}</li>`).join('')}</ul></html>`;
+ download(html,'AI Redaction-informe.html','text/html;charset=utf-8');status('Informe exportado como HTML. Puedes abrirlo e imprimirlo como PDF.');
 });
+function showLogin(){ $('#appShell').hidden=true;$('#loginScreen').hidden=false; }
+$('#showPassword').addEventListener('click',()=>{const visible=$('#accessPassword').type==='password';$('#accessPassword').type=visible?'text':'password';$('#showPassword').textContent=visible?'Ocultar':'Mostrar';$('#showPassword').setAttribute('aria-pressed',String(visible));});
+$('#loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();$('#loginError').hidden=true;$('#loginButton').disabled=true;$('#loginButton').textContent='Entrando…';
+ try{
+  const response=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('#accessPassword').value})});
+  const data=await response.json();if(!response.ok)throw new Error(data.error||'No se pudo iniciar la sesión.');$('#accessPassword').value='';await init();
+ }catch(e){$('#loginError').textContent=e.message;$('#loginError').hidden=false;}finally{$('#loginButton').disabled=false;$('#loginButton').textContent='Entrar a mi espacio';}
+});
+$('#logout').addEventListener('click',async()=>{try{await api('logout',{});location.reload();}catch(e){error(e);}});
 async function init(){
  renderResults();renderExternal();
- try{const res=await fetch('/api/config');if(!res.ok)throw new Error('No se pudo conectar al servidor.');state.config=await res.json();renderRubric(state.config.rubric);$('#aiConfig').textContent=state.config.aiConfigured?`Configurada con ${state.config.model}. Se inicia solo cuando lo solicitas.`:'La revisión local está disponible. Para la lectura con IA, configura una clave de OpenAI en el servidor.';$('#aiReview').disabled=!state.config.aiConfigured;}
- catch(e){error(e);status('No se pudo iniciar la conexión local.');}
+ try{
+  const sessionResponse=await fetch('/api/session');if(!sessionResponse.ok)throw new Error('No se pudo conectar. Vuelve a intentar.');
+  const session=await sessionResponse.json();if(!session.authenticated){showLogin();return;}
+  const res=await fetch('/api/config');if(!res.ok)throw new Error('No se pudo iniciar la sesión.');state.config=await res.json();renderRubric(state.config.rubric);
+  $('#aiConfig').textContent=state.config.aiConfigured?`Lista para revisar con ${state.config.providerName}. Se inicia solo cuando lo solicitas.`:'La revisión con IA aún no está activada. Puedes revisar la extensión, las citas y las coincidencias.';
+  $('#aiReview').disabled=!state.config.aiConfigured;$('#logout').hidden=!state.config.accessRequired;$('#loginScreen').hidden=true;$('#appShell').hidden=false;
+ }catch(e){showLogin();$('#loginError').textContent=e.message;$('#loginError').hidden=false;}
 }
 init();
