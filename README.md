@@ -1,5 +1,7 @@
 # AI Redaction · v0.5
 
+**[Abrir AI Redaction](https://ai-redaction.onrender.com/)**
+
 Revisor académico privado en español para uso personal y familiar. Carga un trabajo, revisa su extensión y fuentes, contrasta coincidencias y solicita una lectura formativa con IA.
 
 ## Para usar la app
